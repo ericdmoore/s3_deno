@@ -1,22 +1,36 @@
 # deno_s3
 
-![ci](https://github.com/lucacasonato/deno_aws_sign_v4/workflows/ci/badge.svg)
-[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/s3@0.5.0/mod.ts)
-[![Coverage Status](https://coveralls.io/repos/github/lucacasonato/deno_s3/badge.svg?branch=main)](https://coveralls.io/github/lucacasonato/deno_s3?branch=main)
+<!-- ![ci](https://github.com/lucacasonato/deno_aws_sign_v4/workflows/ci/badge.svg) -->
+<!-- [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/s3@0.5.0/mod.ts) -->
+<!-- [![Coverage Status](https://coveralls.io/repos/github/lucacasonato/deno_s3/badge.svg?branch=main)](https://coveralls.io/github/lucacasonato/deno_s3?branch=main) -->
 
 Amazon S3 for Deno
 
 > ⚠️ This project is work in progress. Expect breaking changes.
 
+> Forked from the very wonderful project by `lucacasonato` solely for the purpose of removing the privlege escalation
+
+## Install
+``` bash
+deno intall "https://denopkg.com/ericdmoore/s3_deno@main/mod.ts"
+```
+
+## Reqd Privs
+
+> the package is an API wrapper
+```
+--allow-net amazonaws.com
+```
+
 ## Example
 
 ```ts
-import { S3, S3Bucket } from "https://deno.land/x/s3@0.5.0/mod.ts";
+import { S3, S3Bucket } from "https://denopkg.com/ericdmoore/s3_deno@main/mod.ts";
 
 // Create a S3 instance.
 const s3 = new S3({
-  accessKeyID: Deno.env.get("AWS_ACCESS_KEY_ID")!,
-  secretKey: Deno.env.get("AWS_SECRET_ACCESS_KEY")!,
+  accessKeyID: "NOT_A_REAL_AWS_ACCESS_KEY"!,
+  secretKey: "NOT_A_REAL_AWS_SECRET_ACCESS_KEY",
   region: "us-east-1",
   endpointURL: Deno.env.get("S3_ENDPOINT_URL"),
 });
@@ -29,11 +43,11 @@ bucket = s3.getBucket("test");
 
 // Create a bucket instance manuely.
 bucket = new S3Bucket({
-  accessKeyID: Deno.env.get("AWS_ACCESS_KEY_ID")!,
-  secretKey: Deno.env.get("AWS_SECRET_ACCESS_KEY")!,
+  accessKeyID: "NOT_A_REAL_AWS_ACCESS_KEY"!,
+  secretKey: "NOT_A_REAL_AWS_SECRET_ACCESS_KEY",
   bucket: "test",
   region: "us-east-1",
-  endpointURL: Deno.env.get("S3_ENDPOINT_URL"),
+  // endpointURL: Deno.env.get("S3_ENDPOINT_URL"),
 });
 
 const encoder = new TextEncoder();
@@ -60,8 +74,13 @@ await bucket.deleteObject("test");
 
 ## Contributing
 
-To run tests you need to Docker and docker-compose installed.
-
 ```
 make test
 ```
+
+<!-- References -->
+[ci_img]:''
+[ci_url]:''
+
+[cov_img]:''
+[cov_url]:''

@@ -1,19 +1,19 @@
-import type { Signer } from "../deps.ts";
-
 export interface Params {
   [key: string]: string;
 }
+export type  Fetcher = (request:Request) => Promise<Response>
 
 export const encoder = new TextEncoder();
 
 interface S3RequestOptions {
   host: string;
-  signer: Signer;
+  signer: { sign: (service: string, request: Request) => Promise<Request>}
   method: string;
   path?: string;
   params?: Params;
   headers?: Params;
   body?: Uint8Array | undefined;
+  internalFetch?: Fetcher
 }
 
 export async function doRequest({
@@ -24,6 +24,7 @@ export async function doRequest({
   method,
   headers,
   body,
+  internalFetch
 }: S3RequestOptions): Promise<Response> {
   const url = path == "/" ? new URL(host) : new URL(encodeURIS3(path), host);
   if (params) {
@@ -43,7 +44,7 @@ export async function doRequest({
   if (body) {
     signedRequest.headers.set("content-length", body.length.toFixed(0));
   }
-  return fetch(signedRequest);
+  return internalFetch ? internalFetch(signedRequest) : fetch(signedRequest);
 }
 
 export function encodeURIS3(input: string): string {

@@ -1,9 +1,9 @@
-import { AWSSignerV4 } from "../deps.ts";
+import { awsV4Sig, Signer } from "../deps.ts";
 import type { CreateBucketOptions } from "./types.ts";
 import { S3Error } from "./error.ts";
-import { S3Bucket } from "./bucket.ts";
+import { S3Bucket, type S3BucketConfig } from "./bucket.ts";
 import { doRequest, encoder } from "./request.ts";
-import type { Params } from "./request.ts";
+import type { Params, Fetcher } from "./request.ts";
 
 export interface S3Config {
   region: string;
@@ -11,6 +11,7 @@ export interface S3Config {
   secretKey: string;
   sessionToken?: string;
   endpointURL?: string;
+  internalFetch?: Fetcher
 }
 
 /**
@@ -28,26 +29,70 @@ export interface S3Config {
  * ```
  */
 export class S3 {
-  readonly #signer: AWSSignerV4;
-  readonly #host: string;
   readonly #config: S3Config;
+  readonly #signer: Signer;
+  readonly #host: string;
+  readonly #internalFetch?: Fetcher
 
   constructor(config: S3Config) {
-    this.#signer = new AWSSignerV4(config.region, {
-      awsAccessKeyId: config.accessKeyID,
-      awsSecretKey: config.secretKey,
-    });
+    this.#internalFetch = config.internalFetch
     this.#host = config.endpointURL ??
       `https://s3.${config.region}.amazonaws.com/`;
     this.#config = { ...config };
+    this.#signer ={
+      sign: (svc:string, req:Request) => awsV4Sig({
+        service: svc,
+        region: config.region,
+        awsAccessKeyId: config.accessKeyID,
+        awsSecretKey: config.secretKey,
+        sessionToken: config.sessionToken
+      })(req) 
+    } as Signer
   }
 
   /** Creates a new S3Bucket instance with the same config passed to the S3 client. */
   getBucket(bucket: string): S3Bucket {
-    return new S3Bucket({
-      ...this.#config,
-      bucket,
-    });
+    return new S3Bucket(
+      this.validateBucketName(bucket)
+    )
+  }
+
+  /**
+   * @see: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+   * @param bucket 
+   * @throws on Validation  Error
+   */
+  validateBucketName(bucket:string): S3BucketConfig { 
+    const errMsgs = ['Invalid Bucket Name:'] as string[]
+
+    if(bucket.length <= 3  && bucket.length >= 63){
+      errMsgs.push('- The length of the bucket name m,ust be between 3 and 63 characters long')
+    } 
+    if(/[^a-z0-9.-]/g.test(bucket)){
+      errMsgs.push('- Bucket names can consist only of lowercase letters, numbers, dots (.), and hyphens (-).')
+    }
+    if( /[^a-z0-9]/.test(bucket[0])  || 
+        /[^a-z0-9]/.test(bucket.slice(-1)) )
+      {
+        errMsgs.push('- Bucket names must begin and end with a letter or number.')
+    }
+    if(bucket.includes('..')){
+      errMsgs.push('- Bucket names must not contain two adjacent periods.')
+    }
+    if( /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/g.test(bucket) ){
+      errMsgs.push('- Bucket names must not be formatted as an IP address (for example, 192.168.5.4).')
+    }
+    if(bucket.startsWith('xn--') ){
+      errMsgs.push('- Bucket names must not start with the prefix xn--.')
+    }
+    if(bucket.endsWith('-s3alias') ){
+      errMsgs.push('- Bucket names must not end with the suffix -s3alias. This suffix is reserved for access point alias names.')
+    }  
+    if(errMsgs.length > 1){
+      throw new Error(errMsgs.join('\n'))
+    }
+
+    return{...this.#config, bucket }
   }
 
   /**
@@ -64,8 +109,10 @@ export class S3 {
    */
   async createBucket(
     bucket: string,
-    options?: CreateBucketOptions,
+    options?: CreateBucketOptions
   ): Promise<S3Bucket> {
+    // throws on validation Error
+    this.validateBucketName(bucket)
     const headers: Params = {};
 
     if (options?.acl) {
@@ -107,6 +154,7 @@ export class S3 {
       method: "PUT",
       headers,
       body,
+      internalFetch: this.#internalFetch
     });
 
     if (resp.status !== 200) {
@@ -118,7 +166,6 @@ export class S3 {
 
     // clean up http body
     await resp.arrayBuffer();
-
     return this.getBucket(bucket);
   }
 }

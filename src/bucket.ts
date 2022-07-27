@@ -1,5 +1,6 @@
 import {
-  AWSSignerV4,
+  // AWSSignerV4 // was causing priv escalation
+  awsV4Sig,
   decodeXMLEntities,
   parseXML,
   pooledMap,
@@ -26,27 +27,40 @@ import type {
 import { S3Error } from "./error.ts";
 import type { Signer } from "../deps.ts";
 import { doRequest, encodeURIS3 } from "./request.ts";
-import type { Params } from "./request.ts";
+import type { Params, Fetcher } from "./request.ts";
 
 export interface S3BucketConfig extends S3Config {
   bucket: string;
+  internalFetch?: Fetcher
 }
 
 export class S3Bucket {
   #signer: Signer;
   #host: string;
+  #bucket: string
+  /**
+   * This is where you can inject mock-style mechanisms
+   */
+  readonly #internalFetcher?: Fetcher;
 
   constructor(config: S3BucketConfig) {
-    this.#signer = new AWSSignerV4(config.region, {
-      awsAccessKeyId: config.accessKeyID,
-      awsSecretKey: config.secretKey,
-      sessionToken: config.sessionToken,
-    });
+    this.#bucket = config.bucket
+    this.#internalFetcher = config.internalFetch
     this.#host = config.endpointURL
       ? new URL(`/${config.bucket}/`, config.endpointURL).toString()
-      : config.bucket.indexOf(".") >= 0
+      : config.bucket.includes(".")
       ? `https://s3.${config.region}.amazonaws.com/${config.bucket}/`
       : `https://${config.bucket}.s3.${config.region}.amazonaws.com/`;
+    
+    this.#signer = {
+        sign: (svc:string, req:Request) => awsV4Sig({
+          service: svc,
+          region: config.region,
+          awsAccessKeyId: config.accessKeyID,
+          awsSecretKey: config.secretKey,
+          sessionToken: config.sessionToken
+        })(req) 
+      } as Signer
   }
 
   async headObject(
@@ -95,6 +109,7 @@ export class S3Bucket {
       method: "HEAD",
       params,
       headers,
+      internalFetch: this.#internalFetcher
     });
     if (res.body) {
       await res.arrayBuffer();
@@ -200,6 +215,7 @@ export class S3Bucket {
       method: "GET",
       params,
       headers,
+      internalFetch: this.#internalFetcher
     });
     if (res.status === 404) {
       // clean up http body
@@ -287,6 +303,7 @@ export class S3Bucket {
       method: "GET",
       params,
       headers,
+      internalFetch: this.#internalFetcher
     });
     if (res.status === 404) {
       // clean up http body
@@ -459,6 +476,7 @@ export class S3Bucket {
       method: "PUT",
       headers,
       body,
+      internalFetch: this.#internalFetcher
     });
     if (resp.status !== 200) {
       throw new S3Error(
@@ -558,6 +576,7 @@ export class S3Bucket {
       path: destination,
       method: "PUT",
       headers,
+      internalFetch: this.#internalFetcher
     });
     if (resp.status !== 200) {
       throw new S3Error(
@@ -587,6 +606,7 @@ export class S3Bucket {
       path: key,
       method: "DELETE",
       params,
+      internalFetch: this.#internalFetcher
     });
     if (resp.status !== 204) {
       throw new S3Error(
