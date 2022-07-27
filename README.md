@@ -14,7 +14,7 @@ Amazon S3 for Deno
 
 ## Install
 ``` bash
-deno install "https://denopkg.com/ericdmoore/s3_deno@main/mod.ts"
+deno install -f "https://denopkg.com/ericdmoore/s3_deno@main/mod.ts"
 ```
 
 ## Reqd Privs
