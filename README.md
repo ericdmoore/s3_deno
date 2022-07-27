@@ -35,7 +35,6 @@ const s3 = new S3({
   accessKeyID: "NOT_A_REAL_AWS_ACCESS_KEY"!,
   secretKey: "NOT_A_REAL_AWS_SECRET_ACCESS_KEY",
   region: "us-east-1",
-  region: "us-east-1",
   endpointURL: getEndpointUrl()
 });
 
