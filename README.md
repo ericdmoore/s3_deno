@@ -1,4 +1,4 @@
-# deno_s3
+# s3_deno
 
 <!-- ![ci](https://github.com/lucacasonato/deno_aws_sign_v4/workflows/ci/badge.svg) -->
 <!-- [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/s3@0.5.0/mod.ts) -->
@@ -8,7 +8,7 @@ Amazon S3 for Deno
 
 > ⚠️ This project is work in progress. Expect breaking changes.
 
-> Forked from the very wonderful project by `lucacasonato` solely for the purpose of removing the privlege escalation
+> Forked from the very wonderful project by [`lucacasonato`](https://github.com/lucacasonato/deno_s3) solely for the purpose of removing the privlege escalation
 
 ## Install
 ``` bash
