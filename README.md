@@ -10,6 +10,8 @@ Amazon S3 for Deno
 
 > Forked from the very wonderful project by [`lucacasonato`](https://github.com/lucacasonato/deno_s3) solely for the purpose of removing the privlege escalation
 
+> and then i felt obliged to maintain it - so I changed the tests to use a mock - newly created for this repo
+
 ## Install
 ``` bash
 deno intall "https://denopkg.com/ericdmoore/s3_deno@main/mod.ts"
