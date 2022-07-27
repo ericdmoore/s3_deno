@@ -1,4 +1,4 @@
-# deno_s3
+# s3_deno
 
 <!-- ![ci](https://github.com/lucacasonato/deno_aws_sign_v4/workflows/ci/badge.svg) -->
 <!-- [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/s3@0.5.0/mod.ts) -->
@@ -8,11 +8,13 @@ Amazon S3 for Deno
 
 > ⚠️ This project is work in progress. Expect breaking changes.
 
-> Forked from the very wonderful project by `lucacasonato` solely for the purpose of removing the privlege escalation
+> Forked from the very wonderful project by [`lucacasonato`](https://github.com/lucacasonato/deno_s3) solely for the purpose of removing the privlege escalation
+
+> and then i felt obliged to maintain it - so I changed the tests to use a mock - newly created for this repo
 
 ## Install
 ``` bash
-deno intall "https://denopkg.com/ericdmoore/s3_deno@main/mod.ts"
+deno install -f "https://denopkg.com/ericdmoore/s3_deno@main/mod.ts"
 ```
 
 ## Reqd Privs
@@ -32,7 +34,6 @@ const s3 = new S3({
 
   accessKeyID: "NOT_A_REAL_AWS_ACCESS_KEY"!,
   secretKey: "NOT_A_REAL_AWS_SECRET_ACCESS_KEY",
-  region: "us-east-1",
   region: "us-east-1",
   endpointURL: getEndpointUrl()
 });
