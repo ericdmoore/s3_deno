@@ -29,10 +29,12 @@ import { S3, S3Bucket } from "https://denopkg.com/ericdmoore/s3_deno@main/mod.ts
 
 // Create a S3 instance.
 const s3 = new S3({
+
   accessKeyID: "NOT_A_REAL_AWS_ACCESS_KEY"!,
   secretKey: "NOT_A_REAL_AWS_SECRET_ACCESS_KEY",
   region: "us-east-1",
-  endpointURL: Deno.env.get("S3_ENDPOINT_URL"),
+  region: "us-east-1",
+  endpointURL: getEndpointUrl()
 });
 
 // Create a new bucket.
@@ -47,7 +49,7 @@ bucket = new S3Bucket({
   secretKey: "NOT_A_REAL_AWS_SECRET_ACCESS_KEY",
   bucket: "test",
   region: "us-east-1",
-  // endpointURL: Deno.env.get("S3_ENDPOINT_URL"),
+  endpointURL: getEndpointUrl()
 });
 
 const encoder = new TextEncoder();
