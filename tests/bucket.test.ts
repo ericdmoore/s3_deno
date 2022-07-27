@@ -20,7 +20,7 @@ Deno.test('setup config and client', async (t)=>{
     )
   });
 
-  console.log({bucket})
+  // console.log({bucket})
   
   await t.step({
     name: "[bucket] put object",
@@ -269,6 +269,7 @@ Deno.test('setup config and client', async (t)=>{
   });
   
   await t.step({
+    ignore: true,
     name: "[bucket] empty bucket",
     async fn() {
       // setup

@@ -23,7 +23,7 @@ const pathSelector = (url: URL) => {
     if (hostParts.length === 2) {
       return { bucket: hostParts[0], key: hostParts[1] };
     } else {
-      return { bucket: hostParts[0], key: "^\\createBucket" };
+      return { bucket: hostParts[0], key: "@command://createBucket" };
     }
   } else if (sectionCount.length === 5) {
     const [bucket] = url.hostname.split(".");
@@ -39,10 +39,14 @@ const handleCreateBucket = (
   bucket: string,
   key: string,
 ) => {
-  if(state.has(bucket)){
+  
+  // console.log('>>> Create:', bucket, key)
+  const k = stateKey(bucket,key)
+  
+  if(state.has(k)){
     return new Response(`Conflict: ${bucket}`, { status: 409, statusText: 'Conflict' });
   }else{
-    state.set(bucket, new Uint8Array())
+    state.set(k, enc.encode(key))
     return new Response(`
     <CreateBucketResult>
       <BucketArn>arn:${bucket}</BucketArn>
@@ -225,7 +229,7 @@ export const terribleS3ServerMock = (
         return handleGetObject(state, bucket, key);
       }
     } else if (m === "put") {
-      if (key === "^\\createBucket") {
+      if (key === "@command://createBucket") {
         return handleCreateBucket(state, bucket, key);
       } else {
         if(req.headers.has("x-amz-copy-source")){

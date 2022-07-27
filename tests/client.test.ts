@@ -1,5 +1,5 @@
-import { assertEquals, assertThrows } from "https://deno.land/std@0.147.0/testing/asserts.ts";
-import { S3Error } from "../src/error.ts";
+import { assertEquals, assertRejects } from "https://deno.land/std@0.147.0/testing/asserts.ts";
+// import { S3Error } from "../src/error.ts";
 import { S3 } from "../src/client.ts";
 import { encoder } from "../src/request.ts";
 import { terribleS3ServerMock } from './s3NetworkMock.ts'
@@ -42,6 +42,8 @@ Deno.test('Create/Ensure Bucket Exists ', async (t)=>{
       const bucket = await s3.createBucket("create-bucket-test", {
         acl: "public-read-write",
       });
+
+      // console.log({createdBucket: bucket})
   
       // Check if returned bucket instance is working.
       await bucket.putObject("test", encoder.encode("test"));
@@ -52,9 +54,9 @@ Deno.test('Create/Ensure Bucket Exists ', async (t)=>{
       // teardown
       await bucket.deleteObject("test");
 
-      await assertThrows(
+      // console.log('assert that this thuink will throw an error')
+      await assertRejects(
         () => s3.createBucket("create-bucket-test"),
-        S3Error,
         'Failed to create bucket "create-bucket-test": 409 Conflict',
       );
 
@@ -62,8 +64,8 @@ Deno.test('Create/Ensure Bucket Exists ', async (t)=>{
     }
   });
   
-  const removed = await b.empty()
-  console.log({removed})
+  await b.empty()
+  // console.log({removed})
   
 })
 
