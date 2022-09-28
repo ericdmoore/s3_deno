@@ -4,7 +4,7 @@ test: export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 test: export S3_ENDPOINT_URL=http://localhost:9000
 
 test:
-	deno test tests
+	deno test ./tests --allow-env
 	# docker-compose up -d
 	# aws --endpoint-url=http://localhost:9000 s3 rm --recursive s3://test || true
 	# aws --endpoint-url=http://localhost:9000 s3 rb s3://test || true
